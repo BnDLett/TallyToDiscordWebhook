@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, Response
 from pathlib import Path
 from utilities import tally_json_to_str
 import requests, configparser
@@ -31,6 +31,8 @@ def webhook_receiver():
 
     print(TARGET_WEBHOOK)
     requests.post(TARGET_WEBHOOK, json=payload)
+
+    return Response('', status=200)
 
 
 if __name__ == "__main__":
