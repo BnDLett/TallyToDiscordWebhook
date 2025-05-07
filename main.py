@@ -18,38 +18,6 @@ def webhook_receiver():
 
     content = tally_json_to_str(data)
     payload = {
-        'content': content
-    }
-
-    print(TARGET_WEBHOOK)
-    requests.post(TARGET_WEBHOOK, json=payload)
-
-
-if __name__ == "__main__":
-    # app.run('0.0.0.0', 8080, debug=True)
-    import json
-    from pathlib import Path
-
-    example_json_path = Path('example.json')
-    example_json = json.loads(example_json_path.read_text())
-
-    content = tally_json_to_str(example_json)
-    # for index in range(0, len(content), 2000):
-    #     payload = {
-    #         'username': 'Tally',
-    #         'content': content[index:(index + 2000)],
-    #         'avatar_url': 'https://cds.lettsn.org/dj_blue.png',
-    #         "embeds": [
-    #             {
-    #                 "type": "rich",
-    #                 "title": "Tally Application",
-    #                 "description": content
-    #             }
-    #         ],
-    #         "attachments": []
-    #     }
-
-    payload = {
         'username': 'Tally Application',
         'avatar_url': 'https://cds.lettsn.org/dj_blue.png',
         "embeds": [
@@ -61,5 +29,45 @@ if __name__ == "__main__":
         ],
     }
 
-    req = requests.post(TARGET_WEBHOOK, json=payload)
-    print(req.status_code)
+    print(TARGET_WEBHOOK)
+    requests.post(TARGET_WEBHOOK, json=payload)
+
+
+if __name__ == "__main__":
+    app.run('0.0.0.0', 8080, debug=True)
+    # import json
+    # from pathlib import Path
+    #
+    # example_json_path = Path('example.json')
+    # example_json = json.loads(example_json_path.read_text())
+    #
+    # content = tally_json_to_str(example_json)
+    # # for index in range(0, len(content), 2000):
+    # #     payload = {
+    # #         'username': 'Tally',
+    # #         'content': content[index:(index + 2000)],
+    # #         'avatar_url': 'https://cds.lettsn.org/dj_blue.png',
+    # #         "embeds": [
+    # #             {
+    # #                 "type": "rich",
+    # #                 "title": "Tally Application",
+    # #                 "description": content
+    # #             }
+    # #         ],
+    # #         "attachments": []
+    # #     }
+    #
+    # payload = {
+    #     'username': 'Tally Application',
+    #     'avatar_url': 'https://cds.lettsn.org/dj_blue.png',
+    #     "embeds": [
+    #         {
+    #             "type": "rich",
+    #             "description": content,
+    #             "color": 0xee6e02
+    #         }
+    #     ],
+    # }
+    #
+    # req = requests.post(TARGET_WEBHOOK, json=payload)
+    # print(req.status_code)
