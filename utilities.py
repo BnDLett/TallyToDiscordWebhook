@@ -1,0 +1,77 @@
+from ApplicationResponse import ApplicationResponse
+from Field import FieldTypes, Field, MultipleChoice, Checkbox, Checkboxes
+from datetime import datetime
+
+
+def parse_tally_json(json_data: dict) -> ApplicationResponse:
+    data = json_data['data']
+
+    creation_time = datetime.fromisoformat(json_data['createdAt'])
+    submission_id = data['submissionId']
+    form_id = data['formId']
+    form_name = data['formName']
+
+    fields: list[Field] = []
+
+    for field in data['fields']:
+        key = field['key']
+        label = field['label']
+        field_type = field['type']
+        value = field['value']
+
+        associated_field_type = FieldTypes[field_type]
+
+        if associated_field_type is MultipleChoice:
+            for option in field['options']:
+                if option['id'] == value[0]:
+                    value = option['text']
+                    break
+
+        field_object = associated_field_type(key, label, value)
+
+        fields.append(field_object)
+
+    return ApplicationResponse(creation_time, submission_id, form_id, form_name, fields)
+
+
+def parse_application_response(response: ApplicationResponse) -> str:
+    """
+    Parses an `ApplicationResponse` into a string.
+    :param response: The `ApplicationResponse` to parse.
+    :return: A string.
+    """
+    creation_time = response.creation_time.replace(second=0, microsecond=0)
+
+    result: str = (f'# {response.form_name} ({response.form_id})\n'
+                   f'Response created on: `{creation_time.date()}`\n'
+                   f'Response created at: `{creation_time.time()}`\n'
+                   f'UTC Offset: `{creation_time.utcoffset()}`\n'
+                   f'Response ID: `{response.submission_id}`\n'
+                   f'## Responses\n')
+
+    for field in response.fields:
+        if isinstance(field, Checkboxes) and isinstance(field.value, list):
+            continue
+        elif isinstance(field, Checkboxes) and field.value == False:
+            continue
+
+        result += (f'### {field.label}\n'
+                   f'{field.value}\n')
+
+    return result
+
+
+def tally_json_to_str(json_data: dict) -> str:
+    parse_result = parse_tally_json(json_data)
+    return parse_application_response(parse_result)
+
+
+if __name__ == "__main__":
+    import json
+    from pathlib import Path
+
+    example_json = Path('example.json')
+    data = json.loads(example_json.read_text())
+    _parse_result = parse_tally_json(data)
+
+    print(parse_application_response(_parse_result))
