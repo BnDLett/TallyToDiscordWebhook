@@ -1,4 +1,4 @@
-from Field import Field
+from TallyToDiscordWebhook.Field import Field
 from datetime import datetime
 
 

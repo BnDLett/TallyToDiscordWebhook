@@ -2,8 +2,8 @@ import base64
 import hashlib
 import hmac
 
-from ApplicationResponse import ApplicationResponse
-from Field import FieldTypes, Field, MultipleChoice, Checkbox, Checkboxes
+from TallyToDiscordWebhook.ApplicationResponse import ApplicationResponse
+from TallyToDiscordWebhook.Field import FieldTypes, Field, MultipleChoice, Checkbox, Checkboxes
 from datetime import datetime
 
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     import json
     from pathlib import Path
 
-    example_json = Path('example.json')
+    example_json = Path('../example.json')
     _data = json.loads(example_json.read_text())
     _parse_result = parse_tally_json(_data)
 
