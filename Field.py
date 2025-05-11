@@ -1,18 +1,20 @@
-from enum import Enum
 from typing import Any
+from dataclasses import dataclass
 
 
+@dataclass()
 class Field:
     key: str
     label: str
     value: Any
 
-    def __init__(self, key: str, label: str, value: Any):
-        self.key = key
-        self.label = label
-        self.value = value
+    # def __init__(self, key: str, label: str, value: Any):
+    #     self.key = key
+    #     self.label = label
+    #     self.value = value
 
 
+@dataclass()
 class Checkbox:
     field: Field
 
@@ -20,6 +22,7 @@ class Checkbox:
         self.field = Field(key, label, value)
 
 
+@dataclass()
 class Option:
     id: str
     text: str

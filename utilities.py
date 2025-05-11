@@ -27,6 +27,22 @@ def parse_tally_json(json_data: dict) -> ApplicationResponse:
                     value = option['text']
                     break
 
+        elif associated_field_type is Checkboxes:
+            if not isinstance(value, list):
+                continue
+
+            values: list[Checkbox] = []
+            selected_options = [(x if x['id'] in field['value'] else None) for x in field['options']]
+
+            for selected_option in selected_options:
+                if selected_option is None:
+                    continue
+
+                checkbox = Checkbox(selected_option['id'], selected_option['text'], True)
+                values.append(checkbox)
+
+            value = values
+
         field_object = associated_field_type(key, label, value)
 
         fields.append(field_object)
@@ -51,8 +67,10 @@ def parse_application_response(response: ApplicationResponse) -> str:
 
     for field in response.fields:
         if isinstance(field, Checkboxes) and isinstance(field.value, list):
+            result += (f'### {field.label}\n'
+                       f'- {'\n- '.join([x.field.label for x in field.value])}\n')
             continue
-        elif isinstance(field, Checkboxes) and field.value == False:
+        elif isinstance(field, Checkboxes) and not isinstance(field.value, list):
             continue
 
         result += (f'### {field.label}\n'
