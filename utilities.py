@@ -1,3 +1,7 @@
+import base64
+import hashlib
+import hmac
+
 from ApplicationResponse import ApplicationResponse
 from Field import FieldTypes, Field, MultipleChoice, Checkbox, Checkboxes
 from datetime import datetime
@@ -84,12 +88,20 @@ def tally_json_to_str(json_data: dict) -> str:
     return parse_application_response(parse_result)
 
 
+# https://hookdeck.com/webhooks/guides/how-to-implement-sha256-webhook-signature-verification
+def verify_webhook(signing_key: str, data: bytes, hmac_header: str) -> bool:
+    digest = hmac.new(signing_key.encode('utf-8'), data, digestmod=hashlib.sha256).digest()
+    computed_hmac = base64.b64encode(digest)
+
+    return hmac.compare_digest(computed_hmac, hmac_header.encode('utf-8'))
+
+
 if __name__ == "__main__":
     import json
     from pathlib import Path
 
     example_json = Path('example.json')
-    data = json.loads(example_json.read_text())
-    _parse_result = parse_tally_json(data)
+    _data = json.loads(example_json.read_text())
+    _parse_result = parse_tally_json(_data)
 
     print(parse_application_response(_parse_result))

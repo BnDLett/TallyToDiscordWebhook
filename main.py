@@ -1,17 +1,19 @@
-from flask import Flask, request, Response
+from flask import Flask, request, Response, abort
 from pathlib import Path
-from utilities import tally_json_to_str
+from utilities import tally_json_to_str, verify_webhook
 import requests, configparser
 
 CONFIG = configparser.ConfigParser()
 CONFIG_PATH = Path('config.ini')
 CONFIG.read(CONFIG_PATH.absolute())
 
+# General configurations
 TARGET_WEBHOOK = CONFIG.get('general', 'target_webhook')
 DEBUG = CONFIG.get('general', 'debug', fallback=False) == 'true'
 DEBUG_WEBHOOK = CONFIG.get('general', 'debug_webhook', fallback=None)
 
-KEY = CONFIG.get('security', 'signing_key', fallback=None)
+# Security related configurations
+SIGNING_KEY = CONFIG.get('security', 'signing_key', fallback=None)
 
 app = Flask(__name__)
 
@@ -20,6 +22,9 @@ app = Flask(__name__)
 def webhook_receiver():
     data = request.json
     tally_signature = request.headers.get('Tally-Signature')
+
+    if tally_signature is None or not verify_webhook(SIGNING_KEY, request.get_data(), tally_signature):
+        abort(401)
 
     content = tally_json_to_str(data)
     payload = {
@@ -34,7 +39,6 @@ def webhook_receiver():
         ],
     }
 
-    print(TARGET_WEBHOOK)
     requests.post(TARGET_WEBHOOK, json=payload)
 
     return Response('', status=204)
