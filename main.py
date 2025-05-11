@@ -1,10 +1,13 @@
 from flask import Flask, request, Response, abort
 from pathlib import Path
+from logging import getLogger
 from utilities import tally_json_to_str, verify_webhook
 import requests, configparser
 
 CONFIG = configparser.ConfigParser()
 CONFIG_PATH = Path('config.ini')
+LOGGER = getLogger('TallyToDiscordWebhook')
+
 CONFIG.read(CONFIG_PATH.absolute())
 
 # General configurations
@@ -14,6 +17,20 @@ DEBUG_WEBHOOK = CONFIG.get('general', 'debug_webhook', fallback=None)
 
 # Security related configurations
 SIGNING_KEY = CONFIG.get('security', 'signing_key', fallback=None)
+
+# Appearance
+USERNAME = CONFIG.get('appearance', 'username', fallback=None)
+PROFILE_PICTURE = CONFIG.get('appearance', 'profile_picture', fallback=None)
+EMBED_COLOR = CONFIG.get('appearance', 'embed_color', fallback=0xee6e02)
+
+try:
+    if isinstance(EMBED_COLOR, str):
+        EMBED_COLOR = int(EMBED_COLOR, 16)
+except ValueError:
+    LOGGER.warning("Couldn't parse the provided embed color. Make sure you've provided a proper base 16 integer for the"
+                   " embed_color configuration.")
+    EMBED_COLOR = 0xee6e02
+
 
 app = Flask(__name__)
 
@@ -28,8 +45,8 @@ def webhook_receiver():
 
     content = tally_json_to_str(data)
     payload = {
-        'username': 'Tally Application',
-        'avatar_url': 'https://cds.lettsn.org/memes/steven_universe/amethyst_consumes_steven.png',
+        'username': USERNAME,
+        'avatar_url': PROFILE_PICTURE,
         "embeds": [
             {
                 "type": "rich",
@@ -45,6 +62,9 @@ def webhook_receiver():
 
 
 if __name__ == "__main__":
+    LOGGER.warning("This script is being ran directly. It is highly recommended against to run this script directly "
+                   "unless you know what you are doing.")
+
     if not DEBUG:
         app.run('0.0.0.0', 8080, debug=True)
         exit(0)
@@ -58,13 +78,13 @@ if __name__ == "__main__":
     _content = tally_json_to_str(example_json)
 
     _payload = {
-        'username': 'Tally Debug Application',
-        'avatar_url': 'https://cds.lettsn.org/memes/steven_universe/amethyst_consumes_steven.png',
+        'username': USERNAME,
+        'avatar_url': PROFILE_PICTURE,
         "embeds": [
             {
                 "type": "rich",
                 "description": _content,
-                "color": 0xee6e02
+                "color": EMBED_COLOR
             }
         ],
     }
