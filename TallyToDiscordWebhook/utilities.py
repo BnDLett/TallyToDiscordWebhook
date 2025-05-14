@@ -63,9 +63,7 @@ def parse_application_response(response: ApplicationResponse) -> str:
     creation_time = response.creation_time.replace(second=0, microsecond=0)
 
     result: str = (f'# {response.form_name} ({response.form_id})\n'
-                   f'Response created on: `{creation_time.date()}`\n'
-                   f'Response created at: `{creation_time.time()}`\n'
-                   f'UTC Offset: `{creation_time.utcoffset()}`\n'
+                   f'Response created: <t:{int(creation_time.timestamp())}>\n'
                    f'Response ID: `{response.submission_id}`\n'
                    f'## Responses\n')
 
@@ -96,12 +94,32 @@ def verify_webhook(signing_key: str, data: bytes, hmac_header: str) -> bool:
     return hmac.compare_digest(computed_hmac, hmac_header.encode('utf-8'))
 
 
+def split_at_length(to_split: str, target_char: str, max_length: int) -> list[str]:
+    last_known_position: int | None = None
+    last_split_position: int | None = 0
+    result: list[str] = []
+
+    index: int = 0
+    for index, char in enumerate(to_split):
+        if char == target_char:
+            last_known_position = index
+
+        if (((index - last_split_position) + 1) == max_length) and (last_known_position is not None):
+            result.append(to_split[last_split_position:last_known_position])
+            last_split_position = last_known_position
+
+    result.append(to_split[last_split_position:index])
+    return result
+
+
 if __name__ == "__main__":
     import json
     from pathlib import Path
 
-    example_json = Path('../example.json')
+    example_json = Path('example.json')
     _data = json.loads(example_json.read_text())
     _parse_result = parse_tally_json(_data)
+    _result = parse_application_response(_parse_result)
 
-    print(parse_application_response(_parse_result))
+
+    print('\n\n'.join(split_at_length(_result, '\n', 1024)))
