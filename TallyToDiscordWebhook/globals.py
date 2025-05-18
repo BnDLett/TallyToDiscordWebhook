@@ -24,7 +24,7 @@ PROFILE_PICTURE = CONFIG.get('appearance', 'profile_picture', fallback=None)
 EMBED_COLOR = CONFIG.get('appearance', 'embed_color', fallback=0xee6e02)
 
 # Webhooks
-CHANNELS = CONFIG.options('webhook_channels')
+WEBHOOKS = CONFIG.options('webhook_channels')
 
 try:
     if isinstance(EMBED_COLOR, str):

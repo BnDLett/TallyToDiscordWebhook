@@ -1,11 +1,15 @@
 from flask import request, abort, Response
-from TallyToDiscordWebhook.globals import app, SIGNING_KEY, USERNAME, PROFILE_PICTURE, EMBED_COLOR, CONFIG
+from TallyToDiscordWebhook.globals import app, SIGNING_KEY, USERNAME, PROFILE_PICTURE, EMBED_COLOR, CONFIG, WEBHOOKS
 from TallyToDiscordWebhook.utilities import verify_webhook, tally_json_to_str, split_at_length
 import requests, threading
 
 
-def _send_embeds(to_send: str, target_channel: str):
+def _send_embeds(to_send: str, target_channel: str | None):
     content_list = split_at_length(to_send, "\n", 4096)
+
+    if target_channel is None:
+        target_channel = WEBHOOKS[0]
+
     target_webhook = CONFIG.get('webhook_channels', target_channel)
 
     for content in content_list:
