@@ -3,7 +3,7 @@ import hashlib
 import hmac
 
 from TallyToDiscordWebhook.ApplicationResponse import ApplicationResponse
-from TallyToDiscordWebhook.Field import FieldTypes, Field, MultipleChoice, Checkbox, Checkboxes
+from TallyToDiscordWebhook.Field import FieldTypes, Field, MultipleChoice, Checkbox, Checkboxes, FileUpload, File, Link
 from datetime import datetime
 
 
@@ -47,6 +47,18 @@ def parse_tally_json(json_data: dict) -> ApplicationResponse:
 
             value = values
 
+        elif associated_field_type is FileUpload:
+            values: list[File] = []
+
+            for file in field['value']:
+                file = File(file['name'], file['url'])
+                values.append(file)
+
+            value = values
+
+        if value is None:
+            continue
+
         field_object = associated_field_type(key, label, value)
 
         fields.append(field_object)
@@ -73,6 +85,8 @@ def parse_application_response(response: ApplicationResponse) -> str:
                        f'- {'\n- '.join([x.field.label for x in field.value])}\n')
             continue
         elif isinstance(field, Checkboxes) and not isinstance(field.value, list):
+            continue
+        elif isinstance(field, FileUpload) or isinstance(field, Link):
             continue
 
         result += (f'### {field.label}\n'
@@ -109,6 +123,20 @@ def split_at_length(to_split: str, target_char: str, max_length: int) -> list[st
             last_split_position = last_known_position
 
     result.append(to_split[last_split_position:index])
+    return result
+
+
+def parse_embeds(tally_application: ApplicationResponse) -> str:
+    result = ''
+
+    for field in tally_application.fields:
+        if isinstance(field, FileUpload):
+            x: File
+            result += f'- {'\n- '.join([f'[{x.label}]({x.value})' for x in field.value])}\n'
+
+        elif isinstance(field, Link):
+            result += f'- {field.value}\n'
+
     return result
 
 

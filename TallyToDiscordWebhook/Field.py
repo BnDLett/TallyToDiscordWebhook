@@ -28,6 +28,12 @@ class Option:
     text: str
 
 
+@dataclass()
+class File:
+    label: str
+    value: str
+
+
 class InputText(Field):
     value: str
 
@@ -51,10 +57,23 @@ class MultipleChoice(Field):
     value: Option
 
 
+class FileUpload(Field):
+    value: list[File]
+
+class Link(Field):
+    value: str
+
+class HiddenField(Field):
+    value: str
+
+
 FieldTypes = {
     'INPUT_TEXT': InputText,
     'TEXTAREA': TextArea,
     'LINEAR_SCALE': LinearScale,
     'CHECKBOXES': Checkboxes,
     'MULTIPLE_CHOICE': MultipleChoice,
+    'FILE_UPLOAD': FileUpload,
+    'INPUT_LINK': Link,
+    'HIDDEN_FIELDS': HiddenField,
 }
