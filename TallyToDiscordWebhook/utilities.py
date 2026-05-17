@@ -17,11 +17,16 @@ def parse_tally_json(json_data: dict) -> ApplicationResponse:
 
     fields: list[Field] = []
 
+    field: dict
     for field in data['fields']:
+        # no value available to use.
         key = field['key']
         label = field['label']
         field_type = field['type']
         value = field['value']
+
+        if value is None:
+            value = ''
 
         associated_field_type = FieldTypes[field_type]
 
@@ -50,7 +55,7 @@ def parse_tally_json(json_data: dict) -> ApplicationResponse:
         elif associated_field_type is FileUpload:
             values: list[File] = []
 
-            for file in field['value']:
+            for file in value:
                 file = File(file['name'], file['url'])
                 values.append(file)
 
@@ -131,10 +136,13 @@ def parse_embeds(tally_application: ApplicationResponse) -> str:
 
     for field in tally_application.fields:
         if isinstance(field, FileUpload):
+            print(field)
+            if not field.value: continue
             x: File
             result += f'- {'\n- '.join([f'[{x.label}]({x.value})' for x in field.value])}\n'
 
         elif isinstance(field, Link):
+            if field.value == '': continue
             result += f'- {field.value}\n'
 
     return result
